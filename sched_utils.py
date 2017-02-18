@@ -1,7 +1,9 @@
-import ConfigParser, urllib2, os
+import argparse, ConfigParser, urllib2, os
 
 config = ConfigParser.ConfigParser()
 config.readfp(open('sched_util.conf'))
+
+parser = argparse.ArgumentParser(description='Interact with Sched scheduling app')
 
 CONFIG_API_SECTION = 'Sched'
 CONFIG_API_KEY     = 'api_key'
@@ -25,6 +27,22 @@ def getConfigs(config):
 
     return apiKey, apiUrl
 
+def parseArguments(parser):
+    parser.add_argument('-a', help='Selected activity', required=True, choices=['session_list', 'session_add'])
+    parser.add_argument('-i', help='Input file')
+    parser.add_argument('-o', help='Output file (defaults to console)')
+
+    args = parser.parse_args()
+    return args
+
+def outputResults(results, args):
+    if args.o is not None:
+        with open(args.o, 'w') as outFile:
+            outFile.write(results)
+        outFile.closed
+    else:
+        print results
+
 def sessionList(apiKey, apiUrl, since, format, status, customData):
     argSince = argFormat = argStatus = argCustomData = '' 
     apiEndpoint = apiUrl + 'session/list?'
@@ -41,10 +59,16 @@ def sessionList(apiKey, apiUrl, since, format, status, customData):
 
     requestUrl = apiEndpoint + argApiKey + argSince + argFormat + argStatus + argCustom
 
-    print urllib2.urlopen(requestUrl).read()
+    return urllib2.urlopen(requestUrl).read()
 
 
 apiKey, apiUrl = getConfigs(config)
-sessionList(apiKey, apiUrl, None, 'json', None, 'Y')
+args = parseArguments(parser)
 
 
+if args.a == 'session_list':
+    results = sessionList(apiKey, apiUrl, None, 'json', None, 'Y')
+elif args.a == 'session_add':
+    print 'coming soon'
+
+outputResults(results, args)
