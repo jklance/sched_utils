@@ -6,9 +6,6 @@ config.readfp(open('sched_util.conf'))
 CONFIG_API_SECTION = 'Sched'
 CONFIG_API_KEY     = 'api_key'
 CONFIG_API_URL     = 'api_url'
-apiKey             = None
-apiUrlBase         = None 
-
 
 def hasConfigValue(config, section, item):
     if config.has_section(section):
@@ -16,7 +13,19 @@ def hasConfigValue(config, section, item):
             return True
     return False
 
-def sessionList(apiKey, since, format, status, customData):
+def getConfigs(config):
+    apiKey = None
+    apiUrl = None 
+
+    if hasConfigValue(config, CONFIG_API_SECTION, CONFIG_API_KEY):
+        apiKey = config.get(CONFIG_API_SECTION, CONFIG_API_KEY)
+
+    if hasConfigValue(config, CONFIG_API_SECTION, CONFIG_API_URL):
+        apiUrl = config.get(CONFIG_API_SECTION, CONFIG_API_URL)
+
+    return apiKey, apiUrl
+
+def sessionList(apiKey, apiUrl, since, format, status, customData):
     argSince = argFormat = argStatus = argCustomData = '' 
     apiEndpoint = apiUrl + 'session/list?'
     argApiKey   = 'api_key=' + apiKey
@@ -35,12 +44,7 @@ def sessionList(apiKey, since, format, status, customData):
     print urllib2.urlopen(requestUrl).read()
 
 
+apiKey, apiUrl = getConfigs(config)
+sessionList(apiKey, apiUrl, None, 'json', None, 'Y')
 
 
-if hasConfigValue(config, CONFIG_API_SECTION, CONFIG_API_KEY):
-    apiKey = config.get(CONFIG_API_SECTION, CONFIG_API_KEY)
-
-if hasConfigValue(config, CONFIG_API_SECTION, CONFIG_API_URL):
-    apiUrl = config.get(CONFIG_API_SECTION, CONFIG_API_URL)
-
-sessionList(apiKey, None, 'json', None, 'Y')
